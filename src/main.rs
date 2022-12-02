@@ -1,4 +1,5 @@
 mod day01;
+mod day02;
 
 use jungle::days;
 
@@ -12,5 +13,6 @@ fn main() {
     days!(
         day.as_str(),
         day01,
+        day02,
     );
 }
