@@ -5,6 +5,7 @@ mod day04;
 mod day05;
 mod day06;
 mod day07;
+mod day08;
 
 use jungle::days;
 
@@ -24,5 +25,6 @@ fn main() {
         day05,
         day06,
         day07,
+        day08,
     );
 }
