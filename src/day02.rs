@@ -11,7 +11,9 @@ fn mistake(s: &str) -> u32 {
         "A Z" => 3,
         "B Z" => 9,
         "C Z" => 6,
-        _ => { panic!("Impossible combination {s}"); }
+        _ => {
+            panic!("Impossible combination {s}");
+        }
     }
 }
 
@@ -26,7 +28,9 @@ fn correct(s: &str) -> u32 {
         "A Z" => 8,
         "B Z" => 9,
         "C Z" => 7,
-        _ => { panic!("Impossible combination {s}"); }
+        _ => {
+            panic!("Impossible combination {s}");
+        }
     }
 }
 

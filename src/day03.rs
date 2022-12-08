@@ -2,9 +2,11 @@ use jungle::readfile;
 
 fn p(c: char) -> u32 {
     let priority = match c {
-        'a' ..= 'z' => 1 + (c as u8) - b'a',
-        'A' ..= 'Z' => 27 + (c as u8) - b'A',
-        _ => { panic!("Unexpected item {c} in backpack"); }
+        'a'..='z' => 1 + (c as u8) - b'a',
+        'A'..='Z' => 27 + (c as u8) - b'A',
+        _ => {
+            panic!("Unexpected item {c} in backpack");
+        }
     };
     priority as u32
 }

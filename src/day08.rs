@@ -26,7 +26,7 @@ impl Grid {
 
         for r in (0..row).rev() {
             if self.height[r][col] >= h {
-                return false
+                return false;
             }
         }
         true
@@ -35,9 +35,9 @@ impl Grid {
     fn viz_dn(&self, row: usize, col: usize) -> bool {
         let h = self.height[row][col];
 
-        for r in (row+1)..SIZE {
+        for r in (row + 1)..SIZE {
             if self.height[r][col] >= h {
-                return false
+                return false;
             }
         }
         true
@@ -48,7 +48,7 @@ impl Grid {
 
         for c in (0..col).rev() {
             if self.height[row][c] >= h {
-                return false
+                return false;
             }
         }
         true
@@ -57,16 +57,19 @@ impl Grid {
     fn viz_rt(&self, row: usize, col: usize) -> bool {
         let h = self.height[row][col];
 
-        for c in (col+1)..SIZE {
+        for c in (col + 1)..SIZE {
             if self.height[row][c] >= h {
-                return false
+                return false;
             }
         }
         true
     }
 
     fn visible(&self, row: usize, col: usize) -> bool {
-        self.viz_up(row, col) || self.viz_dn(row, col) || self.viz_lt(row, col) || self.viz_rt(row, col)
+        self.viz_up(row, col)
+            || self.viz_dn(row, col)
+            || self.viz_lt(row, col)
+            || self.viz_rt(row, col)
     }
 
     fn scene_up(&self, row: usize, col: usize) -> u64 {
@@ -86,7 +89,7 @@ impl Grid {
         let mut trees = 0;
         let h = self.height[row][col];
 
-        for r in (row+1)..SIZE {
+        for r in (row + 1)..SIZE {
             trees += 1;
             if self.height[r][col] >= h {
                 break;
@@ -112,7 +115,7 @@ impl Grid {
         let mut trees = 0;
         let h = self.height[row][col];
 
-        for c in (col+1)..SIZE {
+        for c in (col + 1)..SIZE {
             trees += 1;
             if self.height[row][c] >= h {
                 break;
@@ -122,7 +125,10 @@ impl Grid {
     }
 
     fn scenic(&self, row: usize, col: usize) -> u64 {
-        self.scene_up(row, col) * self.scene_dn(row, col) * self.scene_lt(row, col) * self.scene_rt(row, col)
+        self.scene_up(row, col)
+            * self.scene_dn(row, col)
+            * self.scene_lt(row, col)
+            * self.scene_rt(row, col)
     }
 }
 

@@ -12,14 +12,16 @@ fn log2dirs(lines: &mut dyn Iterator<Item = &str>) -> Vec<usize> {
             if let Some((command, dir)) = two {
                 match (command, dir) {
                     ("cd", "..") => {
-                            v.push(du);
-                            du += sizes.pop().unwrap();
-                        }
+                        v.push(du);
+                        du += sizes.pop().unwrap();
+                    }
                     ("cd", _) => {
-                            sizes.push(du);
-                            du = 0;
-                        }
-                    (_, _) => { panic!("Unanticipated command {command}"); }
+                        sizes.push(du);
+                        du = 0;
+                    }
+                    (_, _) => {
+                        panic!("Unanticipated command {command}");
+                    }
                 }
             } else if command != "ls" {
                 panic!("Unanticipated command {command}");
