@@ -25,7 +25,8 @@ fn run(lines: &mut dyn Iterator<Item = &str>, max: usize) -> Vec<i64> {
                 /* Only noop has no parameters */
                 panic!("Unexpected instruction {line}");
             }
-        } else if cycle >= max {
+        }
+        if cycle >= max {
             break;
         }
     }
@@ -64,9 +65,9 @@ pub fn b() {
         // Draw or don't draw sprite
         let col = (cycle % 40) as i64;
         if col + 1 >= x && col - 1 <= x {
-            print!("#");
+            print!("█");
         } else {
-            print!(".");
+            print!(" ");
         }
         if col == 39 {
             print!("\n");
