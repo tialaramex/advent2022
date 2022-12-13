@@ -158,14 +158,16 @@ impl Map {
         let mut dist = u16::MAX;
         for row in 0..HEIGHT {
             for col in 0..WIDTH {
-                if self.height(row, col) == b'a' && self.done[row][col] && self.dist[row][col] < dist {
+                if self.height(row, col) == b'a'
+                    && self.done[row][col]
+                    && self.dist[row][col] < dist
+                {
                     dist = self.dist[row][col];
                 }
             }
         }
         dist
     }
-
 }
 
 pub fn a() {
