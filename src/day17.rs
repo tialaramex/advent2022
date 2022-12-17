@@ -81,7 +81,9 @@ impl Rock {
             2 => Ell,
             3 => Aye,
             4 => Ball,
-            _ => { panic!("That's not how modulo works"); }
+            _ => {
+                panic!("That's not how modulo works");
+            }
         }
     }
 }
@@ -321,7 +323,7 @@ pub fn b() {
         let mut dropper = Dropper::new(Rock::new(rocks), start);
         clock += dropper.drop(&mut chamber, &mut bytes);
 
-        rocks +=1;
+        rocks += 1;
         if clock >= jet_cycle_len * 10 && (rocks % 5) == 0 {
             break;
         }
@@ -353,7 +355,7 @@ pub fn b() {
         let mut dropper = Dropper::new(Ball, start);
         clock += dropper.drop(&mut chamber, &mut bytes);
 
-        rocks +=5;
+        rocks += 5;
         if clock % jet_cycle_len == 0 {
             break;
         }
@@ -385,7 +387,7 @@ pub fn b() {
         let mut dropper = Dropper::new(Ball, start);
         clock += dropper.drop(&mut chamber, &mut bytes);
 
-        rocks +=5;
+        rocks += 5;
         if clock % jet_cycle_len == 0 {
             break;
         }
@@ -410,10 +412,13 @@ pub fn b() {
         let mut dropper = Dropper::new(Rock::new(rocks), start);
         clock += dropper.drop(&mut chamber, &mut bytes);
 
-        rocks +=1;
+        rocks += 1;
         if rocks == TARGET {
             break;
         }
     }
-    println!("After all {TARGET} rocks, the tower ends up {} tall", skipped_height + chamber.true_height());
+    println!(
+        "After all {TARGET} rocks, the tower ends up {} tall",
+        skipped_height + chamber.true_height()
+    );
 }

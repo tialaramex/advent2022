@@ -68,7 +68,7 @@ impl Where {
     }
 }
 
-use Where::{Before,During,After};
+use Where::{After, Before, During};
 
 #[derive(Debug)]
 struct Overlap {
@@ -137,7 +137,7 @@ impl Overlap {
             }
             (During(l), Before(r)) => {
                 let tmp = self.v[l].0;
-                for _ in l..(r-1) {
+                for _ in l..(r - 1) {
                     self.v.remove(l);
                 }
                 self.v[l].0 = tmp;
@@ -150,7 +150,7 @@ impl Overlap {
                 }
                 self.v[l].0 = tmp;
             }
-            (_,_) => {
+            (_, _) => {
                 panic!("Unhandled {l:?} {r:?}");
             }
         }
@@ -160,7 +160,7 @@ impl Overlap {
         for &(p1, p2) in self.v.iter() {
             if p1 > left {
                 return Some(left);
-            } 
+            }
             if p2 >= right {
                 return None;
             }
@@ -185,7 +185,10 @@ pub fn a() {
     for x in overlap.v {
         misses += x.1 - x.0 + 1;
     }
-    println!("There are {} positions which cannot contain a beacon", misses - 1);
+    println!(
+        "There are {} positions which cannot contain a beacon",
+        misses - 1
+    );
 }
 
 const MAX_RANGE: isize = 4_000_000;
