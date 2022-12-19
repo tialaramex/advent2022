@@ -7,6 +7,7 @@ struct Blueprint {
     clay: usize,
     obsidian: (usize, usize),
     geode: (usize, usize),
+    most_ore: usize,
 }
 
 use std::str::FromStr;
@@ -27,6 +28,7 @@ impl FromStr for Blueprint {
         let (geo1, rest) = rest.split_once(" ore and ").unwrap();
         let geo2 = rest.strip_suffix(" obsidian.").unwrap();
         let geode: (usize, usize) = (geo1.parse().unwrap(), geo2.parse().unwrap());
+        let most_ore = usize::max(usize::max(ore, clay), usize::max(obsidian.0, geode.0));
 
         Ok(Blueprint {
             num,
@@ -34,6 +36,7 @@ impl FromStr for Blueprint {
             clay,
             obsidian,
             geode,
+            most_ore,
         })
     }
 }
@@ -64,58 +67,61 @@ impl Me {
         }
     }
 
-    fn next(&self, print: &Blueprint) -> Vec<Self> {
+    fn harvest(&mut self) {
+        self.ore += self.ore_robot;
+        self.clay += self.clay_robot;
+        self.obsidian += self.obsidian_robot;
+        self.geode += self.geode_robot;
+    }
 
+    fn next(&self, print: &Blueprint) -> Vec<Self> {
         let mut out = Vec::new();
-        if self.ore >= print.ore {
+
+        // Make an ore robot if we have enough resource and we may need more ore
+        if self.ore >= print.ore && self.ore_robot < print.most_ore {
             let mut make = self.clone();
             make.ore -= print.ore;
-            make.ore += self.ore_robot;
-            make.clay += self.clay_robot;
-            make.obsidian += self.obsidian_robot;
-            make.geode += self.geode_robot;
+            make.harvest();
             make.ore_robot += 1;
             out.push(make);
         }
-        if self.ore >= print.clay {
+
+        // Make a clay robot if we have enough resource and we may need more clay
+        if self.ore >= print.clay && self.clay_robot < print.obsidian.1 {
             let mut make = self.clone();
             make.ore -= print.clay;
-            make.ore += self.ore_robot;
-            make.clay += self.clay_robot;
-            make.obsidian += self.obsidian_robot;
-            make.geode += self.geode_robot;
+            make.harvest();
             make.clay_robot += 1;
             out.push(make);
         }
-        if self.ore >= print.obsidian.0 && self.clay >= print.obsidian.1 {
+
+        // Make an obsidian robot if we have enough resource and we may need more obsidian
+        if self.ore >= print.obsidian.0
+            && self.clay >= print.obsidian.1
+            && self.obsidian_robot < print.geode.1
+        {
             let mut make = self.clone();
             make.ore -= print.obsidian.0;
             make.clay -= print.obsidian.1;
-            make.ore += self.ore_robot;
-            make.clay += self.clay_robot;
-            make.obsidian += self.obsidian_robot;
-            make.geode += self.geode_robot;
+            make.harvest();
             make.obsidian_robot += 1;
             out.push(make);
         }
+
+        // Definitely make a geode robot if we can
         if self.ore >= print.geode.0 && self.obsidian >= print.geode.1 {
             let mut make = self.clone();
             make.ore -= print.geode.0;
             make.obsidian -= print.geode.1;
-            make.ore += self.ore_robot;
-            make.clay += self.clay_robot;
-            make.obsidian += self.obsidian_robot;
-            make.geode += self.geode_robot;
+            make.harvest();
             make.geode_robot += 1;
             out.push(make);
+        } else {
+            // If we can't yet afford a geode robot, try saving up
+            let mut mined = self.clone();
+            mined.harvest();
+            out.push(mined);
         }
-        // Otherwise just keep the resources
-        let mut mined = self.clone();
-        mined.ore += self.ore_robot;
-        mined.clay += self.clay_robot;
-        mined.obsidian += self.obsidian_robot;
-        mined.geode += self.geode_robot;
-        out.push(mined);
 
         out
     }
@@ -138,14 +144,14 @@ fn run(print: &Blueprint) -> usize {
     loop {
         time -= 1;
 
-//println!("{time} .. {}", current.len());
+        //println!("{time} .. {}", current.len());
         let mut next: Vec<Me> = Vec::new();
         for maybe in current {
             next.append(&mut maybe.next(print));
         }
         next.sort_unstable();
         let best = next.last().unwrap();
-//println!("best is {best:?}");
+        //println!("best is {best:?}");
         let target = best.geode;
         if best.geode > 0 {
             next.retain(|&maybe| maybe.geode + extra(maybe.geode_robot, time) >= target);
@@ -172,14 +178,14 @@ fn part2(print: &Blueprint) -> usize {
     loop {
         time -= 1;
 
-//println!("{time} .. {}", current.len());
+        //println!("{time} .. {}", current.len());
         let mut next: Vec<Me> = Vec::new();
         for maybe in current {
             next.append(&mut maybe.next(print));
         }
         next.sort_unstable();
         let best = next.last().unwrap();
-//println!("best is {best:?}");
+        //println!("best is {best:?}");
         let target = best.geode;
         if best.geode > 0 {
             next.retain(|&maybe| maybe.geode + extra(maybe.geode_robot, time) >= target);
@@ -193,7 +199,6 @@ fn part2(print: &Blueprint) -> usize {
     }
     current.last().unwrap().geode
 }
-
 
 pub fn a() {
     let ctxt = readfile("19");
