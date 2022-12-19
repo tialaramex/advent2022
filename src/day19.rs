@@ -149,21 +149,21 @@ fn run(print: &Blueprint) -> usize {
         for maybe in current {
             next.append(&mut maybe.next(print));
         }
-        next.sort_unstable();
-        let best = next.last().unwrap();
-        //println!("best is {best:?}");
+        next.select_nth_unstable_by(0, |a, b| b.cmp(a));
+        let best = next.first().unwrap();
         let target = best.geode;
-        if best.geode > 0 {
+        if time == 0 {
+            return target;
+        }
+        //println!("best is {best:?} target is {target} in {time}");
+        if target > 0 {
             next.retain(|&maybe| maybe.geode + extra(maybe.geode_robot, time) >= target);
         }
 
+        next.sort_unstable();
         next.dedup();
         current = next;
-        if time == 0 {
-            break;
-        }
     }
-    current.last().unwrap().geode
 }
 
 fn quality(print: &Blueprint) -> usize {
@@ -183,21 +183,21 @@ fn part2(print: &Blueprint) -> usize {
         for maybe in current {
             next.append(&mut maybe.next(print));
         }
-        next.sort_unstable();
-        let best = next.last().unwrap();
-        //println!("best is {best:?}");
+        next.select_nth_unstable_by(0, |a, b| b.cmp(a));
+        let best = next.first().unwrap();
         let target = best.geode;
-        if best.geode > 0 {
+        if time == 0 {
+            return target;
+        }
+        //println!("best is {best:?} target is {target} in {time}");
+        if target > 0 {
             next.retain(|&maybe| maybe.geode + extra(maybe.geode_robot, time) >= target);
         }
 
+        next.sort_unstable();
         next.dedup();
         current = next;
-        if time == 0 {
-            break;
-        }
     }
-    current.last().unwrap().geode
 }
 
 pub fn a() {
