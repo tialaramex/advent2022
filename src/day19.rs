@@ -1,13 +1,15 @@
 use jungle::readfile;
 
+type Number = u16;
+
 #[derive(Copy, Clone, Debug)]
 struct Blueprint {
-    num: usize,
-    ore: usize,
-    clay: usize,
-    obsidian: (usize, usize),
-    geode: (usize, usize),
-    most_ore: usize,
+    num: Number,
+    ore: Number,
+    clay: Number,
+    obsidian: (Number, Number),
+    geode: (Number, Number),
+    most_ore: Number,
 }
 
 use std::str::FromStr;
@@ -17,18 +19,18 @@ impl FromStr for Blueprint {
     fn from_str(line: &str) -> Result<Self, Self::Err> {
         let line = line.strip_prefix("Blueprint ").unwrap();
         let (num, rest) = line.split_once(": Each ore robot costs ").unwrap();
-        let num: usize = num.parse().unwrap();
+        let num: Number = num.parse().unwrap();
         let (ore, rest) = rest.split_once(" ore. Each clay robot costs ").unwrap();
-        let ore: usize = ore.parse().unwrap();
+        let ore: Number = ore.parse().unwrap();
         let (clay, rest) = rest.split_once(" ore. Each obsidian robot costs ").unwrap();
-        let clay: usize = clay.parse().unwrap();
+        let clay: Number = clay.parse().unwrap();
         let (obs1, rest) = rest.split_once(" ore and ").unwrap();
         let (obs2, rest) = rest.split_once(" clay. Each geode robot costs ").unwrap();
-        let obsidian: (usize, usize) = (obs1.parse().unwrap(), obs2.parse().unwrap());
+        let obsidian: (Number, Number) = (obs1.parse().unwrap(), obs2.parse().unwrap());
         let (geo1, rest) = rest.split_once(" ore and ").unwrap();
         let geo2 = rest.strip_suffix(" obsidian.").unwrap();
-        let geode: (usize, usize) = (geo1.parse().unwrap(), geo2.parse().unwrap());
-        let most_ore = usize::max(usize::max(ore, clay), usize::max(obsidian.0, geode.0));
+        let geode: (Number, Number) = (geo1.parse().unwrap(), geo2.parse().unwrap());
+        let most_ore = Number::max(Number::max(ore, clay), Number::max(obsidian.0, geode.0));
 
         Ok(Blueprint {
             num,
@@ -43,14 +45,14 @@ impl FromStr for Blueprint {
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 struct Me {
-    geode: usize,
-    geode_robot: usize,
-    obsidian: usize,
-    obsidian_robot: usize,
-    clay: usize,
-    clay_robot: usize,
-    ore: usize,
-    ore_robot: usize,
+    geode: Number,
+    geode_robot: Number,
+    obsidian: Number,
+    obsidian_robot: Number,
+    clay: Number,
+    clay_robot: Number,
+    ore: Number,
+    ore_robot: Number,
 }
 
 impl Me {
@@ -127,7 +129,7 @@ impl Me {
     }
 }
 
-fn extra(mut n: usize, t: usize) -> usize {
+fn extra(mut n: Number, t: Number) -> Number {
     let mut sum = 0;
     for _ in 0..t {
         sum += n;
@@ -136,7 +138,7 @@ fn extra(mut n: usize, t: usize) -> usize {
     sum
 }
 
-fn run(print: &Blueprint) -> usize {
+fn run(print: &Blueprint) -> Number {
     let mut time = 24;
     let mut current: Vec<Me> = Vec::new();
     current.push(Me::new());
@@ -166,11 +168,11 @@ fn run(print: &Blueprint) -> usize {
     }
 }
 
-fn quality(print: &Blueprint) -> usize {
+fn quality(print: &Blueprint) -> Number {
     run(print) * print.num
 }
 
-fn part2(print: &Blueprint) -> usize {
+fn part2(print: &Blueprint) -> Number {
     let mut time = 32;
     let mut current: Vec<Me> = Vec::new();
     current.push(Me::new());
