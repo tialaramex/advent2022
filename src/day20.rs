@@ -75,5 +75,4 @@ pub fn b() {
     let (x, y, z) = circle.coords();
     let sum = x + y + z;
     println!("Sum is {x} + {y} + {z} = {sum}");
-
 }
