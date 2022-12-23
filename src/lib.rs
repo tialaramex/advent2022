@@ -274,6 +274,8 @@ pub fn heap<T>(a: &mut [T], n: usize) {
     }
 }
 
+pub mod map;
+
 #[cfg(test)]
 
 mod tests {
