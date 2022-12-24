@@ -354,14 +354,15 @@ fn part2(map: &Map) -> u32 {
             }
         }
 
-        next.sort_unstable();
+        next.select_nth_unstable_by(0, |a, b| b.cmp(a));
 
-        let best = next.last().unwrap().pressure;
+        let best = next.first().unwrap().pressure;
         let remain = map.remainder(time);
         let need = if remain > best { 0 } else { best - remain };
 
         // Eliminate possibilities that can't get enough pressure to beat the leader
         next.retain(|&maybe| maybe.pressure >= need);
+        next.sort_unstable();
         next.dedup();
 
         current = next;
