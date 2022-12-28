@@ -54,7 +54,7 @@ impl Sum for Five {
 }
 
 use std::fmt;
-impl fmt::Debug for Five {
+impl fmt::Display for Five {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut s = String::new();
         let mut value = self.0;
@@ -83,8 +83,8 @@ impl fmt::Debug for Five {
 
 pub fn a() {
     let ctxt = readfile("25");
-    let sum: Five = ctxt.lines().map(|l| l.parse::<Five>().unwrap()).sum();
-    println!("{sum:?}");
+    let sum: Five = ctxt.lines().map(|l| l.parse().unwrap()).sum();
+    println!("{sum}");
 }
 
 pub fn b() {
