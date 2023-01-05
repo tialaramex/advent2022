@@ -29,10 +29,8 @@ pub fn a() {
 
 fn badge(s1: &str, s2: &str, s3: &str) -> u32 {
     for c in s1.chars() {
-        if s2.contains(c) {
-            if s3.contains(c) {
-                return p(c);
-            }
+        if s2.contains(c) && s3.contains(c) {
+            return p(c);
         }
     }
     panic!("Somehow the elves have no items in common");
@@ -42,14 +40,10 @@ pub fn b() {
     let ctxt = readfile("03");
     let mut lines = ctxt.lines();
     let mut total: u32 = 0;
-    loop {
-        if let Some(elf1) = lines.next() {
-            let elf2 = lines.next().unwrap();
-            let elf3 = lines.next().unwrap();
-            total += badge(elf1, elf2, elf3);
-        } else {
-            break;
-        }
+    while let Some(elf1) = lines.next() {
+        let elf2 = lines.next().unwrap();
+        let elf3 = lines.next().unwrap();
+        total += badge(elf1, elf2, elf3);
     }
     println!("The total of priorities is {total}");
 }

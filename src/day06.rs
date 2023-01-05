@@ -12,12 +12,10 @@ fn repeats(bytes: &[u8]) -> bool {
 }
 
 fn start(bytes: &[u8], count: usize) -> usize {
-    let mut offset = 0;
-    for w in bytes.windows(count) {
+    for (offset, w) in bytes.windows(count).enumerate() {
         if !repeats(w) {
             return offset + count;
         }
-        offset += 1;
     }
     panic!("Input data contains no start marker");
 }

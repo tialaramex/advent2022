@@ -147,24 +147,20 @@ fn step(map: &mut Ground, offset: usize) -> bool {
 fn read_map(filename: &str) -> Ground {
     let ctxt = readfile(filename);
     let mut map = Map::new();
-    let mut y = 0;
-    for line in ctxt.lines() {
-        let mut x = 0;
-        for b in line.bytes() {
-            match b {
+    for (y, line) in ctxt.lines().enumerate() {
+        for (x, byte) in line.bytes().enumerate() {
+            match byte {
                 b'#' => {
-                    map.write(x, y, Here);
+                    map.write(x as isize, y as isize, Here);
                 }
                 b'.' => {
-                    map.write(x, y, Empty);
+                    map.write(x as isize, y as isize, Empty);
                 }
                 _ => {
                     panic!("Map input should only have elves");
                 }
             }
-            x += 1;
         }
-        y += 1;
     }
     map
 }

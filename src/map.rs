@@ -183,6 +183,12 @@ impl<T: Copy + Default> Map<T> {
     }
 }
 
+impl<T: Copy + Default> Default for Map<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 use std::fmt;
 impl<T: fmt::Debug + Copy + Default> fmt::Debug for Map<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

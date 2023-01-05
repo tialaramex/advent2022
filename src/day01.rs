@@ -5,7 +5,7 @@ fn calories(input: Contents) -> Vec<u64> {
     let mut elves = Vec::new();
     let mut total: u64 = 0;
     for calorie in input.lines() {
-        if let Ok(c) = u64::from_str_radix(calorie, 10) {
+        if let Ok(c) = calorie.parse::<u64>() {
             total += c;
         } else {
             elves.push(total);

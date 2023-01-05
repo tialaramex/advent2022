@@ -81,7 +81,7 @@ impl Me {
 
         // Make an ore robot if we have enough resource and we may need more ore
         if self.ore >= print.ore && self.ore_robot < print.most_ore {
-            let mut make = self.clone();
+            let mut make = *self;
             make.ore -= print.ore;
             make.harvest();
             make.ore_robot += 1;
@@ -90,7 +90,7 @@ impl Me {
 
         // Make a clay robot if we have enough resource and we may need more clay
         if self.ore >= print.clay && self.clay_robot < print.obsidian.1 {
-            let mut make = self.clone();
+            let mut make = *self;
             make.ore -= print.clay;
             make.harvest();
             make.clay_robot += 1;
@@ -102,7 +102,7 @@ impl Me {
             && self.clay >= print.obsidian.1
             && self.obsidian_robot < print.geode.1
         {
-            let mut make = self.clone();
+            let mut make = *self;
             make.ore -= print.obsidian.0;
             make.clay -= print.obsidian.1;
             make.harvest();
@@ -112,7 +112,7 @@ impl Me {
 
         // Definitely make a geode robot if we can
         if self.ore >= print.geode.0 && self.obsidian >= print.geode.1 {
-            let mut make = self.clone();
+            let mut make = *self;
             make.ore -= print.geode.0;
             make.obsidian -= print.geode.1;
             make.harvest();
@@ -120,7 +120,7 @@ impl Me {
             out.push(make);
         } else {
             // If we can't yet afford a geode robot, try saving up
-            let mut mined = self.clone();
+            let mut mined = *self;
             mined.harvest();
             out.push(mined);
         }

@@ -74,6 +74,8 @@ impl Crude {
         }
     }
 
+    // For symmetry with the count method write it this way
+    #[allow(clippy::bool_to_int_with_if)]
     fn count_water(&self, x: usize, y: usize, z: usize) -> usize {
         if self.check(x, y, z) {
             let mut count = 0;

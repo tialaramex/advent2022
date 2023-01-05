@@ -125,21 +125,16 @@ impl Map {
     }
 
     fn line(&mut self, row: usize, line: &str) {
-        let mut col = 0;
-        for b in line.bytes() {
-            match b {
+        for (col, byte) in line.bytes().enumerate() {
+            match byte {
                 b' ' => {}
-                OPEN => {
-                    self.set(row, col, b);
-                }
-                SOLID => {
-                    self.set(row, col, b);
+                OPEN | SOLID => {
+                    self.set(row, col, byte);
                 }
                 _ => {
-                    panic!("Unexpected item code {b} in maze row {row}");
+                    panic!("Unexpected item code {byte} in maze row {row}");
                 }
             }
-            col += 1;
         }
     }
 

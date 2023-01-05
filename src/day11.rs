@@ -177,7 +177,7 @@ pub fn b() {
             break;
         }
     }
-    let reduce: Worry = monkeys.iter().map(|m| Monkey::factor(m)).product();
+    let reduce: Worry = monkeys.iter().map(Monkey::factor).product();
     let count = monkeys.len();
     for _ in 0..10_000 {
         for k in 0..count {

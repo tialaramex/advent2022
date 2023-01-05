@@ -62,45 +62,41 @@ impl Cave {
         let mut points = line.split(" -> ").map(numeric);
         let (mut x, mut y) = points.next().unwrap();
         self.rock(x, y);
-        loop {
-            if let Some((tox, toy)) = points.next() {
-                if tox < x {
-                    loop {
-                        x -= 1;
-                        self.rock(x, y);
-                        if x == tox {
-                            break;
-                        }
+        for (tox, toy) in points {
+            if tox < x {
+                loop {
+                    x -= 1;
+                    self.rock(x, y);
+                    if x == tox {
+                        break;
                     }
-                } else if tox > x {
-                    loop {
-                        x += 1;
-                        self.rock(x, y);
-                        if x == tox {
-                            break;
-                        }
+                }
+            } else if tox > x {
+                loop {
+                    x += 1;
+                    self.rock(x, y);
+                    if x == tox {
+                        break;
                     }
-                } else if toy < y {
-                    loop {
-                        y -= 1;
-                        self.rock(x, y);
-                        if y == toy {
-                            break;
-                        }
+                }
+            } else if toy < y {
+                loop {
+                    y -= 1;
+                    self.rock(x, y);
+                    if y == toy {
+                        break;
                     }
-                } else if toy > y {
-                    loop {
-                        y += 1;
-                        self.rock(x, y);
-                        if y == toy {
-                            break;
-                        }
+                }
+            } else if toy > y {
+                loop {
+                    y += 1;
+                    self.rock(x, y);
+                    if y == toy {
+                        break;
                     }
-                } else {
-                    panic!("The cave readings should all be horizontal or vertical lines");
                 }
             } else {
-                break;
+                panic!("The cave readings should all be horizontal or vertical lines");
             }
         }
     }

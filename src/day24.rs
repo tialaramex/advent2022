@@ -140,7 +140,7 @@ impl Expedition {
         // In the valley, dodging blizzards
         // Wait?
         if Expedition::adapt(valley, tick, self.row, self.col) {
-            v.push(self.clone());
+            v.push(self);
         }
 
         // Up
@@ -189,7 +189,7 @@ impl Expedition {
 
             tick += 1;
             for c in current {
-                for x in c.next(tick, &valley) {
+                for x in c.next(tick, valley) {
                     if !seen.contains(&x) {
                         seen.insert(x);
                         next.push(x);
@@ -216,7 +216,7 @@ impl Expedition {
 
             tick += 1;
             for c in current {
-                for x in c.next(tick, &valley) {
+                for x in c.next(tick, valley) {
                     if !seen.contains(&x) {
                         seen.insert(x);
                         next.push(x);
@@ -235,15 +235,14 @@ impl Expedition {
             row: valley.height + 1,
             col: valley.width,
         };
-        current = Vec::new();
-        current.push(end);
+        current = vec![end];
         'second: loop {
             let mut next: Vec<Expedition> = Vec::new();
             let mut seen: HashSet<Expedition> = HashSet::new();
 
             tick += 1;
             for c in current {
-                for x in c.next(tick, &valley) {
+                for x in c.next(tick, valley) {
                     if !seen.contains(&x) {
                         seen.insert(x);
                         next.push(x);
@@ -266,7 +265,7 @@ impl Expedition {
 
             tick += 1;
             for c in current {
-                for x in c.next(tick, &valley) {
+                for x in c.next(tick, valley) {
                     if !seen.contains(&x) {
                         seen.insert(x);
                         next.push(x);
@@ -289,11 +288,9 @@ fn read_map(filename: &str) -> Valley {
     let width = ctxt.lines().next().unwrap().len() - 2;
     let mut valley = Valley::new(width, height);
 
-    let mut row = 0;
-    for line in ctxt.lines() {
-        let mut col = 0;
-        for b in line.bytes() {
-            match b {
+    for (row, line) in ctxt.lines().enumerate() {
+        for (col, byte) in line.bytes().enumerate() {
+            match byte {
                 b'#' => {
                     if row != 0 && col != 0 && row != height + 1 && col != width + 1 {
                         panic!("Wall in the middle of the valley is unexpected");
@@ -316,9 +313,7 @@ fn read_map(filename: &str) -> Valley {
                     panic!("Map input should only mark blizzards, etc.");
                 }
             }
-            col += 1;
         }
-        row += 1;
     }
     valley
 }

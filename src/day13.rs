@@ -47,7 +47,7 @@ fn item(mut s: &str) -> Option<(Distress, &str)> {
                 return Some((Distress::Integer(substr), rest));
             }
         }
-        return Some((Distress::Integer(&s[..]), ""));
+        return Some((Distress::Integer(s), ""));
     }
 }
 

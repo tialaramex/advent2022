@@ -178,14 +178,14 @@ impl Me {
         let mut out = Vec::new();
         if let Some(n) = at.openid {
             if self.opened.is_closed(n) {
-                let mut opener = self.clone();
+                let mut opener = *self;
                 opener.opened.open(n);
                 opener.pressure += time * (at.flow as u32);
                 out.push(opener);
             }
         }
         for exit in &at.to {
-            let mut mover = self.clone();
+            let mut mover = *self;
             mover.at = *exit;
             out.push(mover);
         }
@@ -215,14 +215,14 @@ impl Us {
         let mut out = Vec::new();
         if let Some(n) = at.openid {
             if self.opened.is_closed(n) {
-                let mut opener = self.clone();
+                let mut opener = *self;
                 opener.opened.open(n);
                 opener.pressure += time * (at.flow as u32);
                 out.push(opener);
             }
         }
         for exit in &at.to {
-            let mut mover = self.clone();
+            let mut mover = *self;
             mover.im_at = *exit;
             out.push(mover);
         }
@@ -233,14 +233,14 @@ impl Us {
         let mut out = Vec::new();
         if let Some(n) = at.openid {
             if self.opened.is_closed(n) {
-                let mut opener = self.clone();
+                let mut opener = *self;
                 opener.opened.open(n);
                 opener.pressure += time * (at.flow as u32);
                 out.push(opener);
             }
         }
         for exit in &at.to {
-            let mut mover = self.clone();
+            let mut mover = *self;
             mover.el_at = *exit;
             out.push(mover);
         }
@@ -280,8 +280,7 @@ fn parse(s: &str) -> (ValveId, Valve) {
 
 fn part1(map: &Map) -> u32 {
     let mut time = 30;
-    let mut current: Vec<Me> = Vec::new();
-    current.push(Me::new());
+    let mut current: Vec<Me> = vec![Me::new()];
 
     loop {
         time -= 1;
@@ -320,8 +319,7 @@ fn part1(map: &Map) -> u32 {
 fn part2(map: &Map) -> u32 {
     // 4 minutes to teach an elephant about valves
     let mut time = 26;
-    let mut current: Vec<Us> = Vec::new();
-    current.push(Us::new());
+    let mut current: Vec<Us> = vec![Us::new()];
 
     loop {
         time -= 1;

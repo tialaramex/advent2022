@@ -9,14 +9,10 @@ struct Grid {
 impl Grid {
     fn read(text: &str) -> Grid {
         let mut height = [[0u8; SIZE]; SIZE];
-        let mut row = 0;
-        for line in text.lines() {
-            let mut col = 0;
-            for c in line.chars() {
-                height[row][col] = c.to_digit(10).unwrap() as u8;
-                col += 1;
+        for (row, line) in text.lines().enumerate() {
+            for (col, ch) in line.chars().enumerate() {
+                height[row][col] = ch.to_digit(10).unwrap() as u8;
             }
-            row += 1;
         }
         Grid { height }
     }

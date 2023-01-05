@@ -70,7 +70,7 @@ pub fn b() {
             print!(" ");
         }
         if col == 39 {
-            print!("\n");
+            println!();
         }
     }
 }

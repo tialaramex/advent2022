@@ -70,11 +70,9 @@ impl Map {
         let mut elevation = [[0u8; WIDTH]; HEIGHT];
         let mut start = (0, 0);
         let mut end = (0, 0);
-        let mut row = 0;
-        for line in text.lines() {
-            let mut col = 0;
-            for b in line.bytes() {
-                elevation[row][col] = match b {
+        for (row, line) in text.lines().enumerate() {
+            for (col, byte) in line.bytes().enumerate() {
+                elevation[row][col] = match byte {
                     b'S' => {
                         start = (row, col);
                         b'a'
@@ -83,14 +81,12 @@ impl Map {
                         end = (row, col);
                         b'z'
                     }
-                    b'a'..=b'z' => b,
+                    b'a'..=b'z' => byte,
                     _ => {
-                        panic!("Unexpected map byte: {b}")
+                        panic!("Unexpected map byte: {byte}")
                     }
                 };
-                col += 1;
             }
-            row += 1;
         }
         Self {
             elevation,

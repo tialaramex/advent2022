@@ -46,7 +46,7 @@ impl<'t> Contents {
     }
 
     pub fn list_numbers(&self) -> impl Iterator<Item = isize> + '_ {
-        self.list().map(|n| isize::from_str_radix(n, 10).unwrap())
+        self.list().map(|n| n.parse().unwrap())
     }
 
     pub fn value(&self) -> &str {
@@ -54,7 +54,7 @@ impl<'t> Contents {
     }
 
     pub fn number(&self) -> isize {
-        isize::from_str_radix(&self.value(), 10).unwrap()
+        self.value().parse().unwrap()
     }
 }
 
@@ -66,8 +66,8 @@ pub fn readfile(filename: &str) -> Contents {
 }
 
 use core::ops::ControlFlow;
-use std::collections::HashMap;
-use std::collections::HashSet;
+use std::collections::hash_map;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
 /// T is a type for an invariant, such as a map
@@ -86,8 +86,7 @@ pub trait State<T>: Copy + Eq + Hash {
         let mut found: Vec<B> = Vec::new();
         let mut seen: HashSet<Self> = HashSet::new();
         seen.insert(initial);
-        let mut current: Vec<Self> = Vec::with_capacity(1);
-        current.push(initial);
+        let mut current: Vec<Self> = vec![initial];
         let mut steps = 0;
 
         while !current.is_empty() {
@@ -126,8 +125,7 @@ pub trait State<T>: Copy + Eq + Hash {
 
         let mut seen: HashSet<Self> = HashSet::new();
         seen.insert(initial);
-        let mut current: Vec<Self> = Vec::with_capacity(1);
-        current.push(initial);
+        let mut current: Vec<Self> = vec![initial];
         let mut steps = 0;
 
         loop {
@@ -164,8 +162,7 @@ pub trait State<T>: Copy + Eq + Hash {
     fn count(initial: Self, steps: usize, invariant: &T) -> usize {
         let mut seen: HashSet<Self> = HashSet::new();
         seen.insert(initial);
-        let mut current: Vec<Self> = Vec::with_capacity(1);
-        current.push(initial);
+        let mut current: Vec<Self> = vec![initial];
 
         for _ in 0..steps {
             let mut next: Vec<Self> = Vec::new();
@@ -199,8 +196,8 @@ pub trait State<T>: Copy + Eq + Hash {
             for state in current {
                 let more = state.next(invariant);
                 for new in more {
-                    if !seen.contains_key(&new) {
-                        seen.insert(new, state);
+                    if let hash_map::Entry::Vacant(e) = seen.entry(new) {
+                        e.insert(state);
                         next.push(new);
                     }
                     if new == goal {
@@ -208,7 +205,7 @@ pub trait State<T>: Copy + Eq + Hash {
                             let mut prev = &new;
                             while prev != &initial {
                                 println!("D: {}", prev.describe(invariant));
-                                prev = seen.get(&prev).unwrap();
+                                prev = seen.get(prev).unwrap();
                             }
                         }
                         return new;
@@ -248,7 +245,7 @@ pub const fn permutations(n: usize) -> usize {
 pub fn heap<T>(a: &mut [T], n: usize) {
     assert!(a.len() < 11);
     if n == 0 {
-        return;
+        //return;
     } else if n % 2 == 1 {
         a.swap(0, 1);
     } else if n % 6 > 0 {

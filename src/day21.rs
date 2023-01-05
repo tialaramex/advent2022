@@ -143,6 +143,8 @@ impl Troupe {
     fn once(&mut self) -> usize {
         let mut count = 0;
         for (&id, monkey) in self.monkeys.iter() {
+            // Entry API might be nice here but tricky to re-arrange
+            #[allow(clippy::map_entry)]
             if self.values.contains_key(&id) {
                 continue;
             } else {
@@ -251,7 +253,7 @@ impl Troupe {
                 Monkey::Div(a, b) => {
                     let na = self.get(a);
                     let nb = self.get(b);
-                    if let Some(_) = na {
+                    if na.is_some() {
                         panic!("It's tricky to handle the other side of division so I did not");
                     } else if let Some(n) = nb {
                         target *= n;
