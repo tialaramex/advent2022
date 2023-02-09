@@ -8,7 +8,7 @@ struct Plane {
 
 impl Plane {
     fn from_to(from: isize, to: isize) -> Self {
-        if to <= from {
+        if to < from {
             panic!("{from} to {to} is not reasonable for defining a Plane");
         }
         let width = to - from;
@@ -21,11 +21,24 @@ impl Plane {
         }
     }
 
+    // Never shrink either end of the range, which might otherwise happen where Map::rect create
+    // large uninitialised Maps
     fn expand(&self) -> Self {
-        let width = self.end - self.start;
+        const GROWTH: isize = 8;
+
+        let offset = if self.offset < self.start - GROWTH {
+            self.offset
+        } else {
+            self.start - GROWTH
+        };
+        let width = if self.size > self.end - offset + GROWTH {
+            self.size
+        } else {
+            self.end - offset + GROWTH // When actually growing this ends up adding GROWTH at both edges
+        };
         Self {
-            size: width + 16,
-            offset: self.start - 8,
+            size: width,
+            offset: offset,
             start: self.start,
             end: self.end,
         }
@@ -39,6 +52,12 @@ pub struct Map<T: Copy + Default> {
     y: Plane,
 }
 
+impl<T: Copy + Default> Default for Map<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// A type for 2D maps of unknown expanses, the backing store automatically grows as necessary
 /// Map<T> implements Debug and/or Display if they are implemented for T to conveniently show the
 /// map
@@ -47,13 +66,13 @@ impl<T: Copy + Default> Map<T> {
     /// Map a Rectangle initially from (x1, y1) to (x2, y2) but it will grow automatically as
     /// necessary
     pub fn rect((x1, y1): (isize, isize), (x2, y2): (isize, isize)) -> Self {
-        if x2 <= x1 {
-            panic!("{x1} must be less than {x2}");
+        if x2 < x1 {
+            panic!("{x1} must be less than or equal to {x2}");
         }
         let x = Plane::from_to(x1, x2);
 
-        if y2 <= y1 {
-            panic!("{y1} must be less than {y2}");
+        if y2 < y1 {
+            panic!("{y1} must be less than or equal to {y2}");
         }
         let y = Plane::from_to(y1, y2);
 
@@ -69,9 +88,9 @@ impl<T: Copy + Default> Map<T> {
 
     fn inbound(&self, x: isize, y: isize) -> bool {
         x >= self.x.offset
-            && x < (self.x.offset + self.x.size - 1)
+            && x < (self.x.offset + self.x.size)
             && y >= self.y.offset
-            && y < (self.y.offset + self.y.size - 1)
+            && y < (self.y.offset + self.y.size)
     }
 
     /// Grow Map by suitably expanding both planes and re-allocating, then copying
@@ -116,6 +135,8 @@ impl<T: Copy + Default> Map<T> {
         }
     }
 
+    /// Range of X values, it is possible that this range includes some "dead" space
+    /// NB if the Map was built by parsing a string, this will be the exact size
     pub fn x(&self) -> Range<isize> {
         Range {
             start: self.x.start,
@@ -123,6 +144,8 @@ impl<T: Copy + Default> Map<T> {
         }
     }
 
+    /// Range of Y values, it is possible that this range includes some "dead" space
+    /// NB if the Map was built by parsing a string, this will be the exact size
     pub fn y(&self) -> Range<isize> {
         Range {
             start: self.y.start,
@@ -183,12 +206,6 @@ impl<T: Copy + Default> Map<T> {
     }
 }
 
-impl<T: Copy + Default> Default for Map<T> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 use std::fmt;
 impl<T: fmt::Debug + Copy + Default> fmt::Debug for Map<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -237,5 +254,26 @@ impl<T: fmt::Display + Copy + Default> fmt::Display for Map<T> {
             f.write_str("\n")?;
         }
         Ok(())
+    }
+}
+
+use std::convert::Infallible;
+use std::str::FromStr;
+impl<T> FromStr for Map<T>
+where
+    char: Into<T>,
+    T: Copy + Default,
+{
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut map = Self::rect((0, 0), (0, 0));
+        for (row, line) in s.lines().enumerate() {
+            for (col, ch) in line.chars().enumerate() {
+                let item = ch.into();
+                map.write(col as isize, row as isize, item);
+            }
+        }
+        Ok(map)
     }
 }
