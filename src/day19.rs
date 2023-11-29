@@ -1,6 +1,6 @@
 use jungle::readfile;
 
-type Number = u16;
+type Number = u8;
 
 #[derive(Copy, Clone, Debug)]
 struct Blueprint {
@@ -129,6 +129,8 @@ impl Me {
     }
 }
 
+// How many extra geodes could possibly get opened
+// Assume each day one extra robot is available (no more could possibly be made)
 fn extra(mut n: Number, t: Number) -> Number {
     let mut sum = 0;
     for _ in 0..t {
@@ -146,18 +148,16 @@ fn run(print: &Blueprint) -> Number {
     loop {
         time -= 1;
 
-        //println!("{time} .. {}", current.len());
-        let mut next: Vec<Me> = Vec::new();
+        let mut next: Vec<Me> = Vec::with_capacity(current.len());
         for maybe in current {
             next.append(&mut maybe.next(print));
         }
         next.select_nth_unstable_by(0, |a, b| b.cmp(a));
         let best = next.first().unwrap();
-        let target = best.geode;
         if time == 0 {
-            return target;
+            return best.geode;
         }
-        //println!("best is {best:?} target is {target} in {time}");
+        let target = best.geode + (best.geode_robot * time);
         if target > 0 {
             next.retain(|&maybe| maybe.geode + extra(maybe.geode_robot, time) >= target);
         }
@@ -168,8 +168,8 @@ fn run(print: &Blueprint) -> Number {
     }
 }
 
-fn quality(print: &Blueprint) -> Number {
-    run(print) * print.num
+fn quality(print: &Blueprint) -> u32 {
+    run(print) as u32 * print.num as u32
 }
 
 fn part2(print: &Blueprint) -> Number {
@@ -180,18 +180,16 @@ fn part2(print: &Blueprint) -> Number {
     loop {
         time -= 1;
 
-        //println!("{time} .. {}", current.len());
-        let mut next: Vec<Me> = Vec::new();
+        let mut next: Vec<Me> = Vec::with_capacity(current.len());
         for maybe in current {
             next.append(&mut maybe.next(print));
         }
         next.select_nth_unstable_by(0, |a, b| b.cmp(a));
         let best = next.first().unwrap();
-        let target = best.geode;
         if time == 0 {
-            return target;
+            return best.geode;
         }
-        //println!("best is {best:?} target is {target} in {time}");
+        let target = best.geode + (best.geode_robot * time);
         if target > 0 {
             next.retain(|&maybe| maybe.geode + extra(maybe.geode_robot, time) >= target);
         }
@@ -218,7 +216,7 @@ pub fn b() {
     let mut product = 1;
     for line in ctxt.lines().take(3) {
         let print: Blueprint = line.parse().unwrap();
-        let best = part2(&print);
+        let best = part2(&print) as u32;
         product *= best;
     }
     println!("Product of best geode production for three blueprints: {product}");
