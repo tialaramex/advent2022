@@ -1,4 +1,5 @@
 use jungle::readfile;
+use std::collections::HashMap;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Ord, PartialOrd)]
 struct ValveId(u16);
@@ -48,6 +49,10 @@ impl Opened {
     fn open(&mut self, c: u8) {
         self.0 |= 1 << c;
     }
+
+    fn compatible(&self, other: Opened) -> bool {
+        (self.0 & other.0) == 0
+    }
 }
 
 type Flow = u16;
@@ -60,10 +65,11 @@ struct Valve {
 }
 
 const VALVES: usize = 26 * 26;
+const REMAINING: usize = 30;
 
 struct Map {
     valves: [Option<Valve>; VALVES],
-    remaining: [u32; 30],
+    remaining: [u32; REMAINING],
     flows: Vec<Flow>,
 }
 
@@ -82,7 +88,7 @@ impl Default for Map {
 
                 unsafe { mem::transmute::<_, [Option<Valve>; VALVES]>(valves) }
             },
-            remaining: [0; 30],
+            remaining: [0; REMAINING],
             flows: Vec::new(),
         }
     }
@@ -102,12 +108,12 @@ impl Map {
         self.remaining[t as usize]
     }
 
-    // Calculate maximum remaining value
+    // Calculate maximum remaining pressure which could be released
     fn calculate(&mut self) {
         let mut v = self.flows.clone();
         v.sort_unstable();
         v.reverse();
-        for t in 0..30 {
+        for t in 0..REMAINING {
             let mut remaining = 0;
             for k in 0..((t + 1) / 2) {
                 if k < v.len() {
@@ -117,71 +123,35 @@ impl Map {
             }
             self.remaining[t] = remaining;
         }
-        println!("{:?}", self.remaining);
-    }
-
-    // Calculate maximum remaining value with an elephant
-    fn calculate_elephant(&mut self) {
-        let mut v = self.flows.clone();
-        v.sort_unstable();
-        v.reverse();
-        for t in 0..26 {
-            let mut remaining = 0;
-
-            let mut t1 = 0;
-            let mut k = 0;
-            let mut moving: bool = false;
-            loop {
-                if t1 >= t {
-                    break;
-                }
-                if moving {
-                    // Can't open valves because we're moving
-                    moving = false;
-                } else {
-                    // I open the best valve, elephant opens the next best valve
-                    if k < v.len() {
-                        let since = t - t1;
-                        remaining += (v[k] as u32) * (since as u32);
-                        k += 1;
-                        if k < v.len() {
-                            remaining += (v[k] as u32) * (since as u32);
-                            k += 1;
-                        }
-                    }
-                    moving = true;
-                }
-                t1 += 1;
-            }
-            self.remaining[t] = remaining;
-        }
     }
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
-struct Me {
-    pressure: u32,
+struct Visitor {
+    released: u32,
     at: ValveId,
     opened: Opened,
 }
 
-impl Me {
+impl Visitor {
     fn new() -> Self {
         Self {
-            pressure: 0,
+            released: 0,
             at: "AA".parse().unwrap(),
             opened: Default::default(),
         }
     }
 
-    fn next(&self, time: u32, at: &Valve) -> Vec<Self> {
+    fn next(&self, time: u32, at: &Valve) -> (Vec<Self>, Vec<Self>) {
         let mut out = Vec::new();
+        let mut solutions = Vec::new();
         if let Some(n) = at.openid {
             if self.opened.is_closed(n) {
                 let mut opener = *self;
                 opener.opened.open(n);
-                opener.pressure += time * (at.flow as u32);
+                opener.released += time * (at.flow as u32);
                 out.push(opener);
+                solutions.push(opener);
             }
         }
         for exit in &at.to {
@@ -189,62 +159,7 @@ impl Me {
             mover.at = *exit;
             out.push(mover);
         }
-        out
-    }
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Ord, PartialOrd)]
-struct Us {
-    pressure: u32,
-    im_at: ValveId,
-    el_at: ValveId,
-    opened: Opened,
-}
-
-impl Us {
-    fn new() -> Self {
-        Self {
-            pressure: 0,
-            im_at: "AA".parse().unwrap(),
-            el_at: "AA".parse().unwrap(),
-            opened: Default::default(),
-        }
-    }
-
-    fn next_me(&self, time: u32, at: &Valve) -> Vec<Self> {
-        let mut out = Vec::new();
-        if let Some(n) = at.openid {
-            if self.opened.is_closed(n) {
-                let mut opener = *self;
-                opener.opened.open(n);
-                opener.pressure += time * (at.flow as u32);
-                out.push(opener);
-            }
-        }
-        for exit in &at.to {
-            let mut mover = *self;
-            mover.im_at = *exit;
-            out.push(mover);
-        }
-        out
-    }
-
-    fn next_elephant(&self, time: u32, at: &Valve) -> Vec<Self> {
-        let mut out = Vec::new();
-        if let Some(n) = at.openid {
-            if self.opened.is_closed(n) {
-                let mut opener = *self;
-                opener.opened.open(n);
-                opener.pressure += time * (at.flow as u32);
-                out.push(opener);
-            }
-        }
-        for exit in &at.to {
-            let mut mover = *self;
-            mover.el_at = *exit;
-            out.push(mover);
-        }
-        out
+        (out, solutions)
     }
 }
 
@@ -280,17 +195,20 @@ fn parse(s: &str) -> (ValveId, Valve) {
 
 fn part1(map: &Map) -> u32 {
     let mut time = 30;
-    let mut current: Vec<Me> = vec![Me::new()];
+    let mut current: Vec<Visitor> = vec![Visitor::new()];
 
     loop {
         time -= 1;
-        let mut next: Vec<Me> = Vec::new();
-        //println!("{time} .. {}", current.len());
+        let mut next: Vec<Visitor> = Vec::new();
 
         for possible in current {
             let x = map.get(possible.at);
             if let Some(valve) = x {
-                for maybe in possible.next(time, valve) {
+                let (onward, solutions) = possible.next(time, valve);
+                for maybe in onward {
+                    next.push(maybe);
+                }
+                for maybe in solutions {
                     next.push(maybe);
                 }
             } else {
@@ -299,12 +217,12 @@ fn part1(map: &Map) -> u32 {
         }
 
         next.sort_unstable();
-        let best = next.last().unwrap().pressure;
+        let best = next.last().unwrap().released;
         let remain = map.remainder(time);
         let need = if remain > best { 0 } else { best - remain };
 
         // Eliminate possibilities that can't get enough pressure to beat the leader
-        next.retain(|&maybe| maybe.pressure >= need);
+        next.retain(|&maybe| maybe.released >= need);
         next.dedup();
 
         current = next;
@@ -313,53 +231,39 @@ fn part1(map: &Map) -> u32 {
         }
     }
 
-    current.last().unwrap().pressure
+    current.last().unwrap().released
 }
 
 fn part2(map: &Map) -> u32 {
     // 4 minutes to teach an elephant about valves
     let mut time = 26;
-    let mut current: Vec<Us> = vec![Us::new()];
+    let mut routes: HashMap<Opened, u32> = HashMap::new();
+    let mut current: Vec<Visitor> = vec![Visitor::new()];
 
     loop {
         time -= 1;
-        let mut elxt: Vec<Us> = Vec::new();
+        let mut next: Vec<Visitor> = Vec::new();
 
         for possible in current {
-            let x = map.get(possible.im_at);
+            let x = map.get(possible.at);
             if let Some(valve) = x {
-                for maybe in possible.next_me(time, valve) {
-                    elxt.push(maybe);
-                }
-            } else {
-                panic!("Somehow {:?} is not on the map", possible.im_at);
-            }
-        }
-
-        elxt.sort_unstable();
-        elxt.dedup();
-
-        let mut next: Vec<Us> = Vec::new();
-
-        for possible in elxt {
-            let x = map.get(possible.el_at);
-            if let Some(valve) = x {
-                for maybe in possible.next_elephant(time, valve) {
+                let (onward, solutions) = possible.next(time, valve);
+                for maybe in onward {
                     next.push(maybe);
                 }
+                for maybe in solutions {
+                    next.push(maybe);
+                    let current = routes.entry(maybe.opened).or_insert(maybe.released);
+                    if *current < maybe.released {
+                        *current = maybe.released;
+                    }
+                }
             } else {
-                panic!("Somehow {:?} is not on the map", possible.el_at);
+                panic!("Somehow {:?} is not on the map", possible.at);
             }
         }
 
-        next.select_nth_unstable_by(0, |a, b| b.cmp(a));
-
-        let best = next.first().unwrap().pressure;
-        let remain = map.remainder(time);
-        let need = if remain > best { 0 } else { best - remain };
-
-        // Eliminate possibilities that can't get enough pressure to beat the leader
-        next.retain(|&maybe| maybe.pressure >= need);
+        // De-duplication requires a sorted slice
         next.sort_unstable();
         next.dedup();
 
@@ -369,7 +273,24 @@ fn part2(map: &Map) -> u32 {
         }
     }
 
-    current.last().unwrap().pressure
+    let mut routes: Vec<(Opened, u32)> = routes.into_iter().collect();
+    routes.sort_unstable_by_key(|route| route.1);
+    routes.reverse();
+    let base = routes.clone();
+
+    let mut best = 0;
+    for (opened, released) in base {
+        for alt in &routes {
+            if opened.compatible(alt.0) {
+                if released + alt.1 > best {
+                    best = released + alt.1;
+                }
+                break;
+            }
+        }
+    }
+
+    best
 }
 
 pub fn a() {
@@ -401,7 +322,7 @@ pub fn b() {
         }
         map.add(id, valve);
     }
-    map.calculate_elephant();
+    map.calculate();
     let n = part2(&map);
     println!("Working with an elephant, most pressure released is {n}");
 }
