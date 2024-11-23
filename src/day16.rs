@@ -73,21 +73,10 @@ struct Map {
     flows: Vec<Flow>,
 }
 
-use std::mem::{self, MaybeUninit};
-
 impl Default for Map {
     fn default() -> Self {
         Self {
-            valves: {
-                let mut valves: [MaybeUninit<Option<Valve>>; VALVES] =
-                    unsafe { MaybeUninit::uninit().assume_init() };
-
-                for valve in &mut valves[..] {
-                    valve.write(None);
-                }
-
-                unsafe { mem::transmute::<_, [Option<Valve>; VALVES]>(valves) }
-            },
+            valves: [const { None }; VALVES],
             remaining: [0; REMAINING],
             flows: Vec::new(),
         }
