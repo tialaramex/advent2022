@@ -140,7 +140,7 @@ fn extra(mut n: Number, t: Number) -> Number {
     sum
 }
 
-fn run(print: &Blueprint, mut time: u8) -> Number {
+fn run(print: &Blueprint, mut time: Number) -> Number {
     let mut current: Vec<Me> = Vec::new();
     current.push(Me::new());
 
@@ -153,8 +153,9 @@ fn run(print: &Blueprint, mut time: u8) -> Number {
         }
         next.select_nth_unstable_by(0, |a, b| b.cmp(a));
         let best = next.first().unwrap();
-        if time == 0 {
-            return best.geode;
+        if time == 1 {
+            // Making any robot in our last minute is futile
+            return best.geode + best.geode_robot;
         }
         let target = best.geode + (best.geode_robot * time);
         if target > 0 {
