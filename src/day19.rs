@@ -140,8 +140,7 @@ fn extra(mut n: Number, t: Number) -> Number {
     sum
 }
 
-fn run(print: &Blueprint) -> Number {
-    let mut time = 24;
+fn run(print: &Blueprint, mut time: u8) -> Number {
     let mut current: Vec<Me> = Vec::new();
     current.push(Me::new());
 
@@ -169,35 +168,7 @@ fn run(print: &Blueprint) -> Number {
 }
 
 fn quality(print: &Blueprint) -> u32 {
-    run(print) as u32 * print.num as u32
-}
-
-fn part2(print: &Blueprint) -> Number {
-    let mut time = 32;
-    let mut current: Vec<Me> = Vec::new();
-    current.push(Me::new());
-
-    loop {
-        time -= 1;
-
-        let mut next: Vec<Me> = Vec::with_capacity(current.len());
-        for maybe in current {
-            next.append(&mut maybe.next(print));
-        }
-        next.select_nth_unstable_by(0, |a, b| b.cmp(a));
-        let best = next.first().unwrap();
-        if time == 0 {
-            return best.geode;
-        }
-        let target = best.geode + (best.geode_robot * time);
-        if target > 0 {
-            next.retain(|&maybe| maybe.geode + extra(maybe.geode_robot, time) >= target);
-        }
-
-        next.sort_unstable();
-        next.dedup();
-        current = next;
-    }
+    run(print, 24) as u32 * print.num as u32
 }
 
 pub fn a() {
@@ -216,7 +187,7 @@ pub fn b() {
     let mut product = 1;
     for line in ctxt.lines().take(3) {
         let print: Blueprint = line.parse().unwrap();
-        let best = part2(&print) as u32;
+        let best = run(&print, 32) as u32;
         product *= best;
     }
     println!("Product of best geode production for three blueprints: {product}");
